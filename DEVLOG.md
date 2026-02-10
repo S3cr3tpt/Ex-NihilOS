@@ -1,0 +1,1 @@
+Day 0: Repository Created. The void is open.
