@@ -24,8 +24,8 @@ The development process—the struggles, the triple faults, and the logic—is d
 *(Note: The DevLog is eventually embedded into the OS filesystem itself).*
 
 ### Status
-- [ ] Bootloader (Real Mode -> Protected Mode)
-- [ ] GDT / IDT Setup
+- [X] Bootloader (Real Mode -> Protected Mode)
+- [~] GDT / IDT Setup
 - [ ] Kernel Main Entry
 - [ ] Memory Management
 - [ ] Shell
