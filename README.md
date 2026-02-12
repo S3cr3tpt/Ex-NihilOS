@@ -25,7 +25,9 @@ The development process—the struggles, the triple faults, and the logic—is d
 
 ### Status
 - [X] Bootloader (Real Mode -> Protected Mode)
-- [~] GDT / IDT Setup
+- [X] GDT / IDT Setup
+- [ ] Paging & Page Tables
+- [ ] Jump to Long Mode
 - [ ] Kernel Main Entry
 - [ ] Memory Management
 - [ ] Shell
