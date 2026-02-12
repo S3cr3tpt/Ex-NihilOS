@@ -1,3 +1,16 @@
+Day 3 testing what i made:
+first i forgot to pop all of the registers and that whould break the code, but seccond after i wrote everthing i tought was right, i got the botting up sequence going crazy just giving the same error over and over again... i just found the but as i was writing, when i did cntr+s to save it didnt read trhe cntr button and added an "s" to the return part in the handler so it broke everythingand now its working and im getting the blue dot when i give the divide by zero interrupt
+Im going to explain what happen, because i found it funny so i forced and devide by zero interrupt and as i had a typo it got another interrupt (interrupt 6) but as i was just testing the IDT, i just had the handler for the zivide by zero and ass i didnt have it it double faulted, and as i dont have anything to handle that i got my first triple fault by just having a typo in the return of a function
+
+Day 3 how am i implementing the IDT:
+First of all i just understood what it is i have to reashearch more to find how to implementt it
+Ok i need even before that to write an interrupt service routine, it makes sense because i was confused the IDT is just saying oh the handler is here but i didnt have it i needed to write the ISR, at first im going to write a simple one that just catches everything that makes another blue dot in the screen because a full ISR has 2048 bytes and right now im workign with 512 because its jut the boot sector and the way im going to do it is im going to manually give an error the division by zero and write the blue dot onto the screen
+
+Day 3 the IDT:
+Once i got to the 32 bit i conntinued not knowing whats the next step because im doing this project step by step each day i want to learn something and implement it, and after some reasearch on how to get to 64 bit, i found that even before i turn the 64 bit on i need and IDT, and what is that, i have no clue im going to search it now
+OK i now know the name of it and it is interrupt description table and form the name im guessing its like the gdt but insted of segmenting the memory and saying what the "laws" are it just says what the cpu must do in each interrupt
+And i have to write the handler for 3 different interrupts like exeption, that it internal issues like the cpu trying to divide by zero, hardware interrupts, that is Keyboard pess what do i do, oh go to the memory adress of the keyboard driver and softwrare interrupts, its the programs asking for things, if the linux askes 0x80 (Linus way to open a file) i need to switch to kerner mode
+
 Day 2 32bit test:
 The test i am going to do is just a red dot created with the 32 bit OS and for that i need to flush the CPU by jummping into the 0x08 that is just the far right of the 32 bit, if it dosnt work then i know i did something wrong
 Ok and i got an error i tryed to jump back to the freeze on the 16 bit, because i didnt realise that when i jumped to the init_32bit i flushed everything and that is why i needed to put that jump 0x08 right after the initialization of the 32 bits because it cant be working on both at the same time so now i have a white dot in the midle made in 16 bit and right next to it i have a red dot made in 32 bit and the 0x08 is a value on the gdt table thatt makes it the offset of the 0x08 that is the specific size defined in the gdt
