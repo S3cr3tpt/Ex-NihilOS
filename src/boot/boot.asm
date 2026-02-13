@@ -68,6 +68,71 @@ init_32bit:
     mov fs, ax
     mov gs, ax
 
+    ;as usual im going to use AI to write the comments to make it easier to read
+   ; --- PHASE 1 & 2: SANITIZE PAGING MEMORY ---
+    ; We will build tables at 0x1000, 0x2000, 0x3000, and 0x4000.
+    mov edi, 0x1000    ; Set destination index to 0x1000 (PML4 base)
+    mov cr3, edi       ; (Optional early load) We will point CR3 here later
+    xor eax, eax       ; Set EAX to 0
+    mov ecx, 4096      ; 4096 double-words (4 bytes) = 16384 bytes (16KB)
+    rep stosd          ; Loop: Write EAX (0) to EDI, decrement ECX, repeat.
+
+    ; --- PHASE 3: FORGE THE LINKS ---
+    mov edi, 0x1000    ; Reset EDI back to PML4 base
+    
+    ; Link PML4 (0x1000) -> PDP (0x2000)
+    ; We write a 32-bit dword. The upper 32-bits are already 0 from our sweep.
+    mov dword [edi], 0x2003      ; Entry 0: Address 0x2000 + Flags 0x3 (Present | R/W)
+    
+    ; Link PDP (0x2000) -> PD (0x3000)
+    mov dword [edi + 0x1000], 0x3003 
+    
+    ; Link PD (0x3000) -> PT (0x4000)
+    mov dword [edi + 0x2000], 0x4003 
+
+    ; --- PHASE 4: THE PAYLOAD (IDENTITY MAP 2MB) ---
+    mov edi, 0x4000    ; Point EDI to the final Page Table (PT)
+    mov eax, 0x0003    ; First physical frame (0x0) + Flags 0x3
+    mov ecx, 512       ; We need to fill 512 entries
+
+.build_page_table:
+    mov dword [edi], eax    ; Write the physical address + flags into the table
+    add eax, 0x1000         ; Increment the physical address by 4KB (next frame)
+    add edi, 8              ; Move to the next 8-byte entry in the table
+    loop .build_page_table  ; Repeat until ECX hits 0
+
+    ; --- PHASE 5: THE ACTIVATION ---
+    mov eax, 0x1000    ; Get the physical address of the Master Table (PML4)
+    mov cr3, eax       ; Load it into the Memory Management Unit
+
+     ; --- MEMORY RECONNAISSANCE (PAGING TEST) ---
+    ; We are manually acting as the MMU to verify our data structure.
+
+    ; Test 1: Did PML4 link to PDP correctly?
+    ; Expected value at 0x1000 is 0x2003 (Address 0x2000 + R/W + Present)
+    mov eax, dword [0x1000]
+    cmp eax, 0x2003
+    jne .skip_test_1
+    mov byte [0xA0000 + 32175], 0x0A  ; Light Green Pixel (PML4 is Good)
+.skip_test_1:
+
+    ; Test 2: Did PDP link to PD correctly?
+    ; Expected value at 0x2000 is 0x3003
+    mov eax, dword [0x2000]
+    cmp eax, 0x3003
+    jne .skip_test_2
+    mov byte [0xA0000 + 32180], 0x0E  ; Yellow Pixel (PDP is Good)
+.skip_test_2:
+
+    ; Test 3: Did the Payload Loop work?
+    ; Let's check Entry 1 of the Page Table (Memory 0x4000 + 8 bytes).
+    ; Expected value is 0x1003 (Physical Address 0x1000 + Flags 0x3).
+    mov eax, dword [0x4008]
+    cmp eax, 0x1003
+    jne .skip_test_3
+    mov byte [0xA0000 + 32185], 0x0D  ; Magenta/Purple Pixel (Payload is Good)
+.skip_test_3:
+
     ; 6. Draw Red Pixel (Proof of Protected Mode)
     ; In 32-bit, we don't use 'es'. We write to 0xA0000 directly.
     mov byte [0xA0000 + 32165], 0x28 ; Red Pixel (Offset slightly to the right)

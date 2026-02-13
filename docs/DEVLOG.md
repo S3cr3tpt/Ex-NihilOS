@@ -1,3 +1,24 @@
+Day 4 testing thhe work:
+I did it and i used 4 levels to keep it sanitized and safer and i am going to test it by writing a byte with a certain color in each memory and after that jsusst dysplaying the byte onto the screen and ill use AI for those tests for me not to write to the wrong addresses and now i should have it like this
+White (16-bit Boot)
+Red (32-bit Boot)
+Blue (IDT Interrupt Fired)
+Green (Level 4 Map Verified)
+Yellow (Level 3 Map Verified)
+Purple (Level 1 Hardware Map Verified)
+and thats exacly what it gave me so thats all for today and im not sure if i fully understand what paging is because its a strange concept but i think in this devlog i have a good enough understanding of how it works and now the only thing i have left is the long mode and writing a full GDT in 64 bits finnaly also th elong mode i dont know what it is but tomorrow ill search it thats all for today, i know its going slow but if i tried to do this all in one day i could but i would forget to eat and drink so to keep me stable i need to do this by steps
+
+Day 4 Implementation of paging:
+as im still in stuck in 512 bytes i can affod to write the full version i just need one that meets the requirements
+And for that im going to use the 4 tables for the levells the each with 4KB from Base and i cant just write directly i need to OR it to not break the system and becasue before anything is done  we are going to just zero it out after that to insted of garbadge data it has all zero if we did it after we where just going to erase the entire map
+
+Day 4 Paging, the next step to almost 64 bits:
+As usual i have no clue what it is because im learning as i go and this is no easy task, and fully understanding everything before i do something is not what i like to do, i want to see it break because of something i do to have a full undersanding of what i did
+so paging its another requirement like the GDT but this time to go to 64 bits, and from what i understood its more to calibrate the memory because 64 bits is a lot so we use a "matrixes" like structure to say its in this row and this colum to not make the assessing of the memory slow, and it has another point that is making sure 1 memory address dosnt have 2 programs that think they are in the same spot and for that it uses "virtual memory addresses" 
+
+Day 4 understanding the next steps:
+when i was reashearching i dindnt know why the only thing i needed to do was just jumping bites like going from 16 to 32 and from that to 64 but now i understand its because all of the cpus are made to be backwards compatible so when it wakes up it thinks it is in the past and only at 16 bits, so we need to build the boot to say, hey you need to go to 64 bits, and all of that in 512 bytes  
+
 Day 3 testing what i made:
 first i forgot to pop all of the registers and that whould break the code, but seccond after i wrote everthing i tought was right, i got the botting up sequence going crazy just giving the same error over and over again... i just found the but as i was writing, when i did cntr+s to save it didnt read trhe cntr button and added an "s" to the return part in the handler so it broke everythingand now its working and im getting the blue dot when i give the divide by zero interrupt
 Im going to explain what happen, because i found it funny so i forced and devide by zero interrupt and as i had a typo it got another interrupt (interrupt 6) but as i was just testing the IDT, i just had the handler for the zivide by zero and ass i didnt have it it double faulted, and as i dont have anything to handle that i got my first triple fault by just having a typo in the return of a function
