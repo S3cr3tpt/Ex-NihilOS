@@ -28,34 +28,7 @@ stop:
     hlt       ; Sleep until interrupt
     jmp stop  ; Infinite loop
 
-gdt_start:
-    ; The CPU requires the first entry to be zero. It detects "null pointers" this way.
-    dd 0x0                  ; 4 bytes of zeros
-    dd 0x0                  ; 4 bytes of zeros
 
-    ; 2. THE KERNEL CODE SEGMENT (Offset 0x08)
-    ; Base=0, Limit=4GB, Access=0x9A, Flags=0xCF
-    dw 0xffff           ; Limit (bits 0-15)
-    dw 0x0000           ; Base (bits 0-15)
-    db 0x00             ; Base (bits 16-23)
-    db 10011010b        ; Access Byte (Present, Ring 0, Code, Readable)
-    db 11001111b        ; Flags (4KB Granularity, 32-bit) + Limit (bits 16-19)
-    db 0x00             ; Base (bits 24-31)
-
-    ; 3. THE KERNEL DATA SEGMENT (Offset 0x10)
-    ; Base=0, Limit=4GB, Access=0x92, Flags=0xCF
-    dw 0xffff           ; Limit (bits 0-15)
-    dw 0x0000           ; Base (bits 0-15)
-    db 0x00             ; Base (bits 16-23)
-    db 10010010b        ; Access Byte (Present, Ring 0, Data, Writable)
-    db 11001111b        ; Flags (4KB Granularity, 32-bit) + Limit (bits 16-19)
-    db 0x00             ; Base (bits 24-31)
-gdt_end:
-
-gdt_descriptor:
-    dw gdt_end - gdt_start - 1   ; Size (16 bits)
-    dd gdt_start   
-    
     
                   ; Address (32 bits)
 [bits 32]
@@ -142,13 +115,35 @@ init_32bit:
 
     ;triger the interrup 0 (divide by zero)
     int 0x00
+    
+    ; load the map
+    mov eax,0x1000
+    mov cr3, eax
 
+    ;PAE enable
+    mov eax, cr4
+    or eax, 1<<5
+    mov cr4,eax
+
+    ;Set it to long mode
+    ; This tells the CPU: "Next time Paging turns on, go to 64-bit."
+    mov ecx, 0xC0000080 ; The ID for the EFER Register
+    rdmsr               ; Read EFER into EDX:EAX
+    or eax, 1 << 8      ; Set Bit 8 (LME)
+    wrmsr               ; Write the value back to the CPU
+    ; 3. Draw Cyan Pixel (Proof that MSRs are working)
+    mov byte [0xA0000 + 32190], 0x0B ; Cyan Dot
     ; 7. freeze again
-    stop32bit:
-        hlt       ; Sleep until interrupt
-        jmp stop32bit  ; Infinite loop
+    ; 4. Enable Paging (The Ignition)
+    ; This activates the MMU. The CPU sees the LME bit is 1, so it enters Long Mode.
+    mov eax, cr0
+    or eax, 1 << 31     ; Set Bit 31 (PG - Paging)
+    mov cr0, eax
 
-
+    ; 5. The Far Jump (The Crossing)
+    ; We jump to Segment 0x18 (The 64-bit Code Segment in your GDT).
+    ; This forces the CPU to flush its pipeline and start decoding 64-bit instructions.
+    jmp 0x18:init_64bit
 ;ISR
 isr_handler:
     ;save all registers as we dont want to mess it up for the rest of the code
@@ -174,6 +169,31 @@ idt_end:
 idt_descriptor:
     dw idt_end - idt_start - 1 ; Size
     dd idt_start               ; Address
+
+[bits 64]
+init_64bit:
+    ; --- THE SINGULARITY ---
+    ; We are now running in native 64-bit mode.
+    
+    ; 6. Draw Magenta Pixel (0x0D - Bright Purple/Pink)
+    ; Proof of Life.
+    mov byte [0xA0000 + 32200], 0x0D 
+
+    hlt
+    jmp $
+
+align 8
+gdt_start:
+    dq 0x0000000000000000 ; Null Descriptor
+    dq 0x00cf9a000000ffff ; 32-bit Code (Offset 0x08)
+    dq 0x00cf92000000ffff ; 32-bit Data (Offset 0x10)
+    dq 0x00209a0000000000 ; 64-bit Code (Offset 0x18) - THE NEW ENTRY
+gdt_end:
+
+gdt_descriptor:
+    dw gdt_end - gdt_start - 1   ; Size (16 bits)
+    dd gdt_start   
+    
 
 ;give it the botting up signature
 times 510 - ($-$$) db 0  ; Fill the rest with zeros

@@ -1,3 +1,22 @@
+Day 5 Frustration with my own stupidity:
+i just spent the last hours debuggin a code that was working and yes the code from before worked from the first try, but i insted of using the correct emulator and flags i was using the wrong ones so it never could boot, i found out because i used an universal boot to 64 and it didnt work so i started checking my script and it had the wrong emulator, the good thing is that next time i know what to look for and im done for today i already have all of the pixels working
+
+Day 5 Implementing everything slowly and loging the data:
+so now im not going to put it al at once i first need to put the gdt in the end because both the 32 and 64 will use it, even if its just one bit that the 64 needs it still needs it, and i put it in the end and it still worked, now im going to change the gdt to work in 64 bites ok it still worked and for now its all fine
+now im going to exable the PAE (physical address extention) and put it to long mode (64 bits) i enabled it and put another dot (cyan) after the other ones as a test to see if its working
+Now i will make the jump to 64 bits, i will delete the freeze in the 32 bit and add a jump to the 64 and put another dot (purple) next to the other ones as a profe that im in, ok it broke but i think its because of the ISR i tried putting it before the gdt and it worked now im going to put the final 64 bit code ok it didnt work it broke im going to do some debuggin to see why, ok i found the line thats givving me an error and its this one "mov cr0, eax
+" for some reason that i still dont understand
+But for some reason this fells good because untill now it was all going too smoothly having this types of errors just proves that im building it from scrath
+
+
+Day 5 another triple fault:
+So i got one error that was the irs was still in 32 bits but it was loading after the 64 bits so i just changed it to be before the 64 bit code, and when i did that the cpu just died and tryed rebooting over and over again and it still, i dont know what i did but it broke everything im going to refetch the previus version and add things slowly this time to see when it breaks
+Ok i fetched the previus version and for now it works, im going to search a  bit more on why the other one failed 
+
+
+Day 5 Jump to long mode:
+From what i understood this is basically the gdt again but insted of jumping to 32bits it jumps to 64, we do this basically like we did in the first gtd, we do it by giving the cpu a "handshake" that is basically a signature that says im prepared to go to 64 bits or another analogy is that its a lock that we need to provide the certain code to unlock the full power mode also i have to change my current gdt to the 64 bits i cant have 2 gdts at the same time
+
 Day 4 testing thhe work:
 I did it and i used 4 levels to keep it sanitized and safer and i am going to test it by writing a byte with a certain color in each memory and after that jsusst dysplaying the byte onto the screen and ill use AI for those tests for me not to write to the wrong addresses and now i should have it like this
 White (16-bit Boot)

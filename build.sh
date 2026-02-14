@@ -11,7 +11,7 @@ nasm -f bin src/boot/boot.asm -o build/boot.bin
 if [ -f "build/boot.bin" ]; then
     echo "[+] Build Successful. Launching the Void..."
     # 4. Run Emulator 
-    qemu-system-i386 -drive format=raw,file=build/boot.bin
+    qemu-system-x86_64 -hda build/boot.bin
 else
     echo "[-] Build Failed. Check your Assembly."
 fi
