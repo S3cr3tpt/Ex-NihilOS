@@ -1,21 +1,29 @@
-[org 0x1000]
+[bits 64]
+global _start
+extern kernel_main
 
-; --- 16-BIT REAL MODE ---
-start:
-    ; 1. SETUP STACK
-    mov ax, 0
-    mov ss, ax
-    mov sp, 0xFFFC
+; --- CONSTANTS (SAFE LOW MEMORY) ---
+%define VBE_INFO_ADDR  0x8000
+%define MODE_INFO_ADDR 0x9000
 
-    ; 2. GET VESA INFO (Scan for 1920x1080x32)
+section .text
+_start:
+    [bits 16]
+    ; DEBUG: Print 'A' (Alive)
+    mov ah, 0x0E
+    mov al, 'A'
+    int 0x10
+
+    ; 1. GET VESA INFO (Targeting 0x8000)
     mov ax, 0x4F00
-    mov di, vbe_info_block
+    mov di, VBE_INFO_ADDR   ; FORCE DI TO 0x8000
     int 0x10
     cmp ax, 0x004F
     jne vbe_fail
 
-    mov si, [vbe_info_block + 14]
-    mov ax, [vbe_info_block + 16]
+    ; Get list pointer from the buffer we just filled
+    mov si, [VBE_INFO_ADDR + 14]
+    mov ax, [VBE_INFO_ADDR + 16]
     mov fs, ax
 
 .find_mode:
@@ -24,25 +32,28 @@ start:
     cmp cx, 0xFFFF
     je vbe_fail
 
+    ; 2. GET MODE INFO (Targeting 0x9000)
     mov ax, 0x4F01
-    mov di, mode_info_block
+    mov di, MODE_INFO_ADDR  ; FORCE DI TO 0x9000
     int 0x10
     cmp ax, 0x004F
     jne .find_mode
 
-    ; Check Resolution (1920x1080x32)
-    mov ax, [mode_info_block + 0x12]
-    cmp ax, 1920
+    ; 3. CHECK FOR 1920x1080
+    mov ax, [MODE_INFO_ADDR + 0x12]
+    cmp ax, 1920        ; Width
     jne .find_mode
-    mov ax, [mode_info_block + 0x14]
-    cmp ax, 1080
+    
+    mov ax, [MODE_INFO_ADDR + 0x14]
+    cmp ax, 1080        ; Height
     jne .find_mode
-    mov al, [mode_info_block + 0x19]
-    cmp al, 32
+    
+    mov al, [MODE_INFO_ADDR + 0x19]
+    cmp al, 32          ; Color Depth
     jne .find_mode
 
-    ; SAVE POINTER
-    mov eax, [mode_info_block + 0x28]
+    ; --- FOUND IT ---
+    mov eax, [MODE_INFO_ADDR + 0x28]
     mov [framebuffer_addr], eax
 
     ; SET MODE
@@ -60,8 +71,12 @@ start:
     jmp 0x08:init_32bit
 
 vbe_fail:
+    mov ah, 0x0E
+    mov al, 'V'
+    int 0x10
+    cli
     hlt
-    jmp vbe_fail
+    jmp $
 
 ; --- 32-BIT MODE ---
 [bits 32]
@@ -74,84 +89,58 @@ init_32bit:
     mov gs, ax
     mov esp, 0x90000
 
-    ; --- PAGING: MAP 4GB (Identity) ---
-    ; We need:
-    ; 1 PML4 at 0x10000
-    ; 1 PDP  at 0x11000
-    ; 4 PDs  at 0x12000, 0x13000, 0x14000, 0x15000 (To cover 4GB)
-    
-    ; 1. Clear 24KB of Memory (0x10000 - 0x16000)
+    ; PAGING (Map 4GB)
     mov edi, 0x10000
     xor eax, eax
     mov ecx, 6144
     rep stosd
 
-    ; 2. Link PML4 -> PDP
     mov dword [0x10000], 0x11003 
+    mov dword [0x11000], 0x12003
+    mov dword [0x11008], 0x13003
+    mov dword [0x11010], 0x14003
+    mov dword [0x11018], 0x15003
 
-    ; 3. Link PDP -> 4 PDs
-    mov dword [0x11000], 0x12003 ; PDP[0] -> PD0 (0-1GB)
-    mov dword [0x11008], 0x13003 ; PDP[1] -> PD1 (1-2GB)
-    mov dword [0x11010], 0x14003 ; PDP[2] -> PD2 (2-3GB)
-    mov dword [0x11018], 0x15003 ; PDP[3] -> PD3 (3-4GB)
-
-    ; 4. Fill all 4 PDs with 2MB Huge Pages
-    ; We need to fill 512 entries * 4 Tables = 2048 entries total.
-    mov edi, 0x12000       ; Start at PD0
-    mov eax, 0x83          ; Phsyical 0 + Huge + Present + RW
-    mov ecx, 2048          ; Fill 4GB worth of pages
-
+    mov edi, 0x12000
+    mov eax, 0x83
+    mov ecx, 2048
 .huge_loop:
     mov [edi], eax
-    add eax, 0x200000      ; Add 2MB to physical address
-    add edi, 8             ; Next entry
+    add eax, 0x200000
+    add edi, 8
     loop .huge_loop
 
-    ; --- ENABLE 64-BIT ---
+    ; LONG MODE
     mov eax, 0x10000
     mov cr3, eax
-
     mov eax, cr4
     or eax, 1 << 5
     mov cr4, eax
-
     mov ecx, 0xC0000080
     rdmsr
     or eax, 1 << 8
     wrmsr
-
     mov eax, cr0
     or eax, 1 << 31
     mov cr0, eax
-
     jmp 0x18:init_64bit
 
 ; --- 64-BIT MODE ---
 [bits 64]
 init_64bit:
-    ; 1. GET FRAMEBUFFER
     mov edi, [framebuffer_addr] 
-    
-    ; 2. DRAW CENTER PIXEL (1920x1080)
-    ; (1080/2 * 1920 + 1920/2) * 4 = 4151040
-    mov dword [rdi + 4151040], 0x00FFFFFF ; White Pixel
-
-    ; 3. DRAW A LINE (To be sure)
-    mov ecx, 100
-    mov rbx, 0
-.line_loop:
-    mov dword [rdi + rbx], 0x00FF0000 ; Blue Line at top left
-    add rbx, 4
-    loop .line_loop
-
+    mov rcx, 0
+    mov ecx, edi
+    mov rdi, rcx
+    call kernel_main
     hlt
     jmp $
 
 ; --- DATA ---
-align 4
-framebuffer_addr dd 0
-vbe_info_block: resb 512
-mode_info_block: resb 256
+section .data
+framebuffer_addr: dd 0
+; NOTE: Removed vbe_info_block and mode_info_block from here.
+; We use the raw memory addresses 0x8000 and 0x9000 instead.
 
 align 8
 gdt_start:
@@ -160,6 +149,7 @@ gdt_start:
     dq 0x00cf92000000ffff
     dq 0x00209a0000000000
 gdt_end:
+
 gdt_descriptor:
     dw gdt_end - gdt_start - 1
     dd gdt_start

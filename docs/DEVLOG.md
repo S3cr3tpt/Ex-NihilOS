@@ -1,3 +1,13 @@
+Day 6 and again another triple faulttttt:
+so i changed it to integrate the boot.asm, kernel.asm and the main.c using the method i sayed before and it just died and i have no clue why
+i changed the resolution just to see what would happen and it fixed it for some reason, i think it was not suported the 1920x1080 for some reason even if before i made it into C it was working but now its not, and from what i reasesrched and its because the way i chose resolutions is basically giong thru a list and as it might be to the end of the list and this one 1024x768 is towards the top it can read it
+and now as its working good im going to "hunt" down the 1080p so it is a proper OS
+Found the problem it was because the bios has a 16 bit limit so its only able to read untill 0xFFFF and when i added the linker it made the C into the kernel making it too big and the variables that searched that were at the end vbe_info_block were getting "crushed" because it surpassed the limit and as it is a list probably the part where it had the 1024 was able to stay in the 64kb part and the other 1080p couldnt, so when i defined the VBE_INFO_ADDR 0x8000 i stuck it to the memory and not let the Liker decide
+
+Day 6 before any memory management:
+So the next maijor step is memory management but writing that in assembly will be hell so i need to change to C, and for that i will need do do a cross compiler, that is a special version of gcc that insted of assuming its for linux it knows nothing and just compiles the C code and transforms it into a x84_64 processor raw machine code so my kernel.asm will be set the cpu up and finding the screen while the kernel.c whill accualy have the heavy logic
+and for those 2 files to "speak" we need a linker that just takes the asm code and the C code and makes it into a single binary file and that will need an ABI (application binary interface) that is a handshake beetween asm and C because it makes them technically speak to eachother with no problem
+
 Day 6? changed the resolution:
 guess what it broke again, it is giving me the same error but this time i think its because i diddnt write enough ram for the full screen and so it triple faulted
 I searched the problem and it probably was because as the boot is trying to read 4 sectors and my kernel is still small it didnt have the 4th sector so it was reading garbage data and that made it triple fault, so i added a lot of zeros to the kernel making it virtually bigger i know i will need to change it after i fully build the kernel so it just dosnt have useless space
@@ -9,7 +19,7 @@ Day 6? migrating the code:
 so the bootloader needs stay at 0x7c00 for the bios load and the kernel needs to be at 0x1000 and the only things that i will do in the boot file is to initialize the stack make the signature and the rest will be migrated to the kernel and im going to clean the code and take out most of the comments because i need to keep it clean this devlog is more than enough to explain what i did and why
 
 Day 6? changing the screen resolution:
-So i cant sleep and i wanted to continue this project because even with all of whats happening i still love to build it, even if its virtually useless the finished product i still want it to come to life
+So i cant sleep, thats why i has a question mark in the day, and i wanted to continue this project because even with all of whats happening i still love to build it, even if its virtually useless the finished product i still want it to come to life
 But taking myself out of the devlog the first thing i noticed is that in the begining it i set the graphical interface to 0x13 VBE that is 320x200 but now i need to change it to make it the HD resolution (1920x1080)
 from what i understood i need to delete the hardcoded screen and then do the accual screen loading in the kernel, but i havent built it yet so i still dont know how to fully put it in the HD mode
 ok i think i understood now, i need to let the boot.asm be literaly the bootloader and move the code that jumps and tests if it worked to the new file kernel.asm, and in there i change to the 32 bit and 64 and only then i can change the resolution becuase i can only set it when im in 16 bit because its the only one that taks to the bios after that its almost if not impossible now im going to create the kernel and move the code
