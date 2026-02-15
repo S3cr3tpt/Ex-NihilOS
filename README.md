@@ -24,12 +24,12 @@ The development process—the struggles, the triple faults, and the logic—is d
 *(Note: The DevLog is eventually embedded into the OS filesystem itself).*
 
 ### Status
-- [X] Bootloader (Real Mode -> Protected Mode)
+- [X] Bootloader (Stage 1: Disk Read & Jump)
+- [X] Kernel Entry (Stage 2: 16-bit Setup -> 64-bit Long Mode)
 - [X] GDT / IDT Setup
-- [X] Paging & Page Tables
-- [X] Jump to Long Mode
-- [ ] Kernel Main Entry
-- [ ] Memory Management
+- [X] Paging (4-Level Identity Map + Huge Pages)
+- [X] VESA High-Definition Graphics (1920x1080)
+- [ ] Memory Management (Physical/Virtual)
 - [ ] Shell
 
 ---

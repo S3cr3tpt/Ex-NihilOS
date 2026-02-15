@@ -1,3 +1,19 @@
+Day 6? changed the resolution:
+guess what it broke again, it is giving me the same error but this time i think its because i diddnt write enough ram for the full screen and so it triple faulted
+I searched the problem and it probably was because as the boot is trying to read 4 sectors and my kernel is still small it didnt have the 4th sector so it was reading garbage data and that made it triple fault, so i added a lot of zeros to the kernel making it virtually bigger i know i will need to change it after i fully build the kernel so it just dosnt have useless space
+
+Day6? migration compleated:
+so i finished the migration but i need to change the build.sh because now i have 2 files that need to be compiled seperatly and after that be fused to make it work ok its done and the fusing was done by literaly doing fusing them using the command cat boot.bin kernel.bin >> $os_image so its literaly put one after another and it worked correcly at first i have the white pixel or singularity as i like to call it but its still in the same resolution because now i need to accualy code it and not just call "do the HD resolution" i need to ask if the bios supports it, scan the list that it gives me untill i find the resolution i want in 64bits 
+
+Day 6? migrating the code:
+so the bootloader needs stay at 0x7c00 for the bios load and the kernel needs to be at 0x1000 and the only things that i will do in the boot file is to initialize the stack make the signature and the rest will be migrated to the kernel and im going to clean the code and take out most of the comments because i need to keep it clean this devlog is more than enough to explain what i did and why
+
+Day 6? changing the screen resolution:
+So i cant sleep and i wanted to continue this project because even with all of whats happening i still love to build it, even if its virtually useless the finished product i still want it to come to life
+But taking myself out of the devlog the first thing i noticed is that in the begining it i set the graphical interface to 0x13 VBE that is 320x200 but now i need to change it to make it the HD resolution (1920x1080)
+from what i understood i need to delete the hardcoded screen and then do the accual screen loading in the kernel, but i havent built it yet so i still dont know how to fully put it in the HD mode
+ok i think i understood now, i need to let the boot.asm be literaly the bootloader and move the code that jumps and tests if it worked to the new file kernel.asm, and in there i change to the 32 bit and 64 and only then i can change the resolution becuase i can only set it when im in 16 bit because its the only one that taks to the bios after that its almost if not impossible now im going to create the kernel and move the code
+
 Day 5 Frustration with my own stupidity:
 i just spent the last hours debuggin a code that was working and yes the code from before worked from the first try, but i insted of using the correct emulator and flags i was using the wrong ones so it never could boot, i found out because i used an universal boot to 64 and it didnt work so i started checking my script and it had the wrong emulator, the good thing is that next time i know what to look for and im done for today i already have all of the pixels working
 
