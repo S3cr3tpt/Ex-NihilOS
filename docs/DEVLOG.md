@@ -1,3 +1,8 @@
+Day 6.5 Burnout:
+So this is a different type of log and im using 6.5 to ot mess with the days progress.
+It has been more than 2 week sinse my last try to work on this, and a lot has happend and i just lost all of the motivation to do everything in general, i tried to code something even if its just a change to the size of the singulariy, but i just looked at the code and nothing making sense in my brain it looked like i was looking at a whole different language that i didnt speak, and i noticed that and i decided to stop a bit not because this is too much work i started this project more for fun and to build something by myself with the help of google and AI to help me understand but life happens, i needed to realocate again because of uni, i started a new semester with subjects that i needed to change and much more so it was just too much and i decided that it was better for me to continue this only when my mind comes back to normal, sorry for the abrupt stop, i know no one is reading this firstly because its my passion project and no one really cares about some new os, there is a lot of them around and better than this, and seccondly because its day 6 i basically just started and if i continue this will just be burried so probably no one will read this, but i just felt the need to keep this stored in the OS itself because this is not just a project to me, this is like my passion, i want to do some low code development and doing this just felt right but now it fells like this is part of me because while making it i realised so many things about myself
+Thats it im sorry for this and see you when i can come back
+
 Day 6 and again another triple faulttttt:
 so i changed it to integrate the boot.asm, kernel.asm and the main.c using the method i sayed before and it just died and i have no clue why
 i changed the resolution just to see what would happen and it fixed it for some reason, i think it was not suported the 1920x1080 for some reason even if before i made it into C it was working but now its not, and from what i reasesrched and its because the way i chose resolutions is basically giong thru a list and as it might be to the end of the list and this one 1024x768 is towards the top it can read it
@@ -12,7 +17,7 @@ Day 6? changed the resolution:
 guess what it broke again, it is giving me the same error but this time i think its because i diddnt write enough ram for the full screen and so it triple faulted
 I searched the problem and it probably was because as the boot is trying to read 4 sectors and my kernel is still small it didnt have the 4th sector so it was reading garbage data and that made it triple fault, so i added a lot of zeros to the kernel making it virtually bigger i know i will need to change it after i fully build the kernel so it just dosnt have useless space
 
-Day6? migration compleated:
+Day 6? migration compleated:
 so i finished the migration but i need to change the build.sh because now i have 2 files that need to be compiled seperatly and after that be fused to make it work ok its done and the fusing was done by literaly doing fusing them using the command cat boot.bin kernel.bin >> $os_image so its literaly put one after another and it worked correcly at first i have the white pixel or singularity as i like to call it but its still in the same resolution because now i need to accualy code it and not just call "do the HD resolution" i need to ask if the bios supports it, scan the list that it gives me untill i find the resolution i want in 64bits 
 
 Day 6? migrating the code:
