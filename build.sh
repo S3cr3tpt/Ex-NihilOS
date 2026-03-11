@@ -19,15 +19,29 @@ nasm -f bin $SRC_BOOT -o $BUILD_DIR/boot.bin
 echo "[*] Assembling Kernel Entry..."
 nasm -f elf64 $SRC_KERNEL_ASM -o $BUILD_DIR/kernel_entry.o
 
-# 4. Compile C Kernel (THE FIX IS HERE)
-echo "[*] Compiling C Kernel..."
-# We add -mno-mmx -mno-sse -mno-sse2 so GCC doesn't use registers we haven't enabled.
-gcc -ffreestanding -mno-red-zone -m64 -mno-mmx -mno-sse -mno-sse2 -c $SRC_KERNEL_C -o $BUILD_DIR/kernel_c.o
+# 4. Dynamic Compilation (Sweep and Compile)
+echo "[*] Sweeping and Compiling C Matrix..."
+C_FILES=$(find src -name "*.c")
+for file in $C_FILES; do
+    OBJ_FILE="$BUILD_DIR/$(basename $file .c).o"
+    gcc -ffreestanding -mno-red-zone -m64 -mno-mmx -mno-sse -mno-sse2 -fno-pie -fno-pic -fno-asynchronous-unwind-tables -c $file -o $OBJ_FILE
+done
 
-# 5. Link
-echo "[*] Linking Kernel..."
-# Important: kernel_entry.o MUST be first!
-ld -o $BUILD_DIR/kernel.bin -Ttext 0x1000 $BUILD_DIR/kernel_entry.o $BUILD_DIR/kernel_c.o --oformat binary
+# 4.5 Dynamic Assembly Compilation (For Ring 0 files like interrupts.asm)
+echo "[*] Sweeping and Compiling Ring 0 Assembly..."
+ASM_FILES=$(find src/cpu -name "*.asm")
+for file in $ASM_FILES; do
+    OBJ_FILE="$BUILD_DIR/$(basename $file .asm).o"
+    nasm -f elf64 $file -o $OBJ_FILE
+done
+
+# 5. Dynamic Linker
+echo "[*] Linking Architecture..."
+# Collect all generated object files, excluding kernel_entry.o to prevent duplicate linking
+ALL_OBJS=$(find $BUILD_DIR -name "*.o" ! -name "kernel_entry.o")
+
+# kernel_entry.o MUST remain first to guarantee it sits exactly at 0x1000
+ld -m elf_x86_64 -o $BUILD_DIR/kernel.bin -Ttext 0x1000 $BUILD_DIR/kernel_entry.o $ALL_OBJS --oformat binary
 
 # 6. Fuse and Pad
 cat $BUILD_DIR/boot.bin $BUILD_DIR/kernel.bin > $OS_IMAGE

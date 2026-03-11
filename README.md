@@ -23,12 +23,23 @@ This OS carries its own history.
 The development process—the struggles, the triple faults, and the logic—is documented in the [DEVLOG.md](./DEVLOG.md).
 *(Note: The DevLog is eventually embedded into the OS filesystem itself).*
 
+### 0x04: Deployment
+To compile the architecture and launch the QEMU emulator:
+`chmod +x build.sh && ./build.sh`
+
+### 0x05: Technical Specs
+- **Mode:** 64-bit Long Mode (DPL 0)
+- **Video:** VESA VBE 1920x1080x32bpp
+- **Interrupts:** 256-gate IDT (ISR/IRQ Handling)
+- **Memory:** 4-level Paging (Identity Mapped)
+
 ### Status
 - [X] Bootloader (Stage 1: Disk Read & Jump)
 - [X] Kernel Entry (Stage 2: 16-bit Setup -> 64-bit Long Mode)
 - [X] GDT / IDT Setup
 - [X] Paging (4-Level Identity Map + Huge Pages)
 - [X] VESA High-Definition Graphics (1920x1080)
+- [X] 64 bits IDT 
 - [ ] Memory Management (Physical/Virtual)
 - [ ] Shell
 
