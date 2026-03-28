@@ -1,10 +1,9 @@
+#include "../global/types.h"
+
 #ifndef IDT_H
 #define IDT_H
 
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
+
 
 // 1. The 16-Byte Gate Structure (Hardware Specification)
 __attribute__((packed)) struct idt_entry {
@@ -30,7 +29,18 @@ void idt_install();
 // External Assembly stubs we generated in the macro
 extern void isr0();
 extern void isr1();
-// ... (We will route the rest later, just define the first few for the test)
+extern void isr2();
+extern void isr3();
+extern void isr4();
+extern void isr5();
+extern void isr6();
+extern void isr7();
+extern void isr8();
+extern void isr9();
+extern void isr10();
+extern void isr11();
+extern void isr12();
+extern void isr13();
 extern void isr14(); 
 
 #endif

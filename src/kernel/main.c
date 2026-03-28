@@ -1,9 +1,10 @@
 #include "../cpu/idt.h" // Route to the new Ring 0 directory
+#include "../global/types.h"
 
-typedef unsigned long long u64;
-typedef unsigned int u32;
+u32* global_framebuffer;
 
 void kernel_main(u32* framebuffer) {
+    global_framebuffer = framebuffer; //
     // 1. Lock the IDT into the CPU
     idt_install();
 
@@ -12,7 +13,7 @@ void kernel_main(u32* framebuffer) {
     for (int y = 0; y < 100; y++) {
         for (int x = 0; x < 100; x++) {
             u64 offset = (y * width) + x;
-            framebuffer[offset] = 0x0000FF00; 
+            framebuffer[offset] = 0x00FFFFFF; 
         }
     }
     

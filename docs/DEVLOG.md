@@ -1,3 +1,13 @@
+Day 8 changing some core code:
+so the framebuffer is local in the main.c so we never have acces to it in the other files so what i did i created a global variable outise the main function to make it global and inside it i put the accual framebuffer, i fell like there is a possible atack vector becasue the framebuffer is global and every file has access to it but we will cover that bridge when we get there and only after i do this i can test the idt
+Ok i did it and it works so my idt is working my next step is doing the memory management
+
+Day 8 Testing the IDT:
+So i am testing the interrupt by putting a force devide by zero and writing a 0 in the midle of the screen so i know its working but i dont know how to write a zero and not just a colour and i was thinking that if i need to write in the idt.c what i want that interrupt to do i will probably need to write it for each interrupt what i want it to do, but thats a lot of work and i am pretty sure that im wrong or i hope im wrong about that, and as for writing the 0 i just realized that i have nothing to make it, i would need to create a loop and for testing porpuses as i dont  have the asci carachters yet i will just write a whit dot in the midle just as a profe the idt is working
+
+ay 7.5 New idea for the OS:
+I want to build basically 2 different os one for me that is just the cli and one for the normal user with the full gui, I will make it in a way of when it's hitting up it ask you a question in Latin I still have to decide which and based in your answer you receive the gui or the cli, but for now I'm only building the "atoms" of the world that is my operating system I wanted to put this in writing so I never forget what I'm actually doing
+
 Day 7 finishing today:
 I forgot to add this new input in the devlog but I found a way for me to not keep editing it was not that hard I just needed to be reminded that when I'm compiling everything I am just adding the code on top of the other complies so I just run a loop to search all of the files after I compiled the bootloader also I encountered a triple fault in the midle of doing the IDT because in the bootloader I was reading the first 50 sections and after that I was giving it to read the 0x08 instead of the 0x018 so it was trying to read a couple of bytes off so it couldn't actually do anything but by changing it to only rhe 30 sections and changing it to the 0x18 it started reading in the right place
 
