@@ -1,25 +1,27 @@
-#include "../cpu/idt.h" // Route to the new Ring 0 directory
+#include "../cpu/idt.h"
+#include "pmm.h"
 #include "../global/types.h"
+
+extern u64 total_memory_size;
+extern void print_memory_string(int start_x, int start_y, u64 total_bytes, u32 color);
+extern void print_hex_64(int start_x, int start_y, u64 value, u32 color);
 
 u32* global_framebuffer;
 
 void kernel_main(u32* framebuffer) {
-    global_framebuffer = framebuffer; //
-    // 1. Lock the IDT into the CPU
-    idt_install();
-
-    // 2. Draw your baseline diagnostic (Green Box)
-    int width = 1920; 
-    for (int y = 0; y < 100; y++) {
-        for (int x = 0; x < 100; x++) {
-            u64 offset = (y * width) + x;
-            framebuffer[offset] = 0x00FFFFFF; 
-        }
-    }
+    global_framebuffer = framebuffer; 
     
-    // 3. THE TRIGGER: Intentionally detonate a Divide-by-Zero hardware panic
-    __asm__ volatile ("int $0");
+    idt_install();
+    pmm_init(); 
 
-    // The CPU should never reach this loop if the interrupt fires
+    // 1. Print total RAM in Cyan
+    print_memory_string(100, 100, total_memory_size, 0x0000FFFF); 
+
+    // 2. ACTIVE TEST: Request one 4KB frame of memory
+    void* new_block = pmm_alloc_block();
+
+    // 3. Print the Hexadecimal address of the new block in Red
+    print_hex_64(100, 150, (u64)new_block, 0x00FF0000);
+
     while(1) { __asm__("hlt"); }
 }

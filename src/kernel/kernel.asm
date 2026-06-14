@@ -13,7 +13,26 @@ _start:
     mov ah, 0x0E
     mov al, 'A'
     int 0x10
+; --- 1. GET MEMORY MAP (E820) ---
+    mov di, 0x5004      
+    xor ebx, ebx        
+    mov dword [0x5000], 0 
 
+.e820_loop:
+    mov eax, 0xe820
+    mov ecx, 24         
+    mov edx, 0x534D4150 
+    int 0x15
+    jc .e820_done       
+    cmp eax, 0x534D4150 
+    jne .e820_done
+    add di, 24          
+    inc dword [0x5000]  
+    test ebx, ebx       
+    je .e820_done
+    jmp .e820_loop
+.e820_done:
+    ; (VESA code continues here...)
     ; 1. GET VESA INFO (Targeting 0x8000)
     mov ax, 0x4F00
     mov di, VBE_INFO_ADDR   ; FORCE DI TO 0x8000

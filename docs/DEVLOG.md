@@ -1,3 +1,12 @@
+Day 9 Video:
+So i had the idea of implementing a number on screen to show how much ram i have to be able to use it now as a POC and in the future for the accual CLI, but i remebred that i dont have number nor letter now i have to implement it myself and im going to build a simple basically hardcoded hexadecimal one for the POC and i also edited the types file so it can only be called once per file, and i also changed the ammounbt of memory i have so i can see at least 2GB i changed it in the build.sh file
+
+Day 9 Implementation of the PMM:
+To accually implement it i need a loop to "discover" the amout of ram i have, and to do that i just keep asking the BIOS if i have more ram untill it tells me that i dontn have, and during that i keep adding the numer to a variable tracking how much frames do i have 
+
+Day 9 Physical memory management (PMM):
+So first i need to "ask" the BIOS how much RAM am i working with, to not go past it nor to work with reserved parts of the RAM and as the only part that is actualy working with the BIOS is the 16 bit part of the booting process i need to "ask" there because if i try to ask in the 64 bit it wont give me anything because it doesnt have direct access to the BIOS, after asking i need to lock the parts that the OS and the reserved bits for the hardware are occupying, and from what i understood i need a data structure for the PMM and the most used is the bitmap witch in it one bit represents 4096 bytes, and if its 1 then it means that the space is occupied and if its 0 then it means that space is free, and with that i can work with the memory
+
 Day 8 changing some core code:
 so the framebuffer is local in the main.c so we never have acces to it in the other files so what i did i created a global variable outise the main function to make it global and inside it i put the accual framebuffer, i fell like there is a possible atack vector becasue the framebuffer is global and every file has access to it but we will cover that bridge when we get there and only after i do this i can test the idt
 Ok i did it and it works so my idt is working my next step is doing the memory management

@@ -22,7 +22,7 @@ void idt_set_gate(int n, uint64_t handler) {
 void isr_handler(uint64_t* stack_frame) {
     // stack_frame[0] is the error code (or our dummy 0)
     // stack_frame[1] is the interrupt number pushed by the macro
-    int width = 1920; 
+    int width = 1920; //screensize in a global file
     int height = 1080;
     int int_no = stack_frame[1];
         switch (int_no) {

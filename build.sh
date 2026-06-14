@@ -50,4 +50,4 @@ dd if=/dev/zero bs=1048576 count=1 >> $OS_IMAGE 2>/dev/null
 echo "[+] Built. Size: $(wc -c < $OS_IMAGE) bytes."
 
 # 7. Run
-qemu-system-x86_64 -drive format=raw,file=$OS_IMAGE -vga std
+qemu-system-x86_64 -drive format=raw,file=$OS_IMAGE -vga std -m 2G
