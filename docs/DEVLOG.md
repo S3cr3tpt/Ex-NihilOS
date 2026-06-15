@@ -1,3 +1,15 @@
+Day 10 ERROR:
+So i had an error while trigerring the interrupt 14, that is when a program "strikes" an unmaped sector it halts the execution loop and drops the address into CR2 register, because i was using the stackframe 1, that is the 2 64 bit frame of it, and when i changed to the 15 i acceded the exact 64bit block with the interrupt number pushed by the hardware, and as for the interrupt it halts the entire process so by using the asm voliatile command i hardcode a stop before the compiler delets it so i dont want it to optimise that part specifically
+
+Day 10 Safety Zones:
+There is a critical failure when enabling the vmm, if we enable it in the exact clock cycle as CR3 register is overwritten the cpu "forgets" all of the pysical locations and to prevent this i hardcoaded an "identity map" in the first 16 MB of RAM so when the CR3 the system dosnt go blind and accually finds the next instruction
+
+Day 10 VMM:
+To accually implement it i changed the static hardcoded assembly paging, to a dynamic one that routes it thru a C file, and this code slices the 64 bits into four 9 bit coordenates (PML4, PDPT, PD, PT)  and when a rout downs exist it calls the pmm to ask for another frame to allocate the memory for the missing branch
+
+Day 10 Virtual Memory Management (VMM):
+The VMM is basically the firewall preventing programs to accually see the hardware it is basically a conversion layer so if a program wants to run on x the pc says ok, and then the VMM pushes it to y, and with that more than 1 program can run in the same block but the VMM transfers each to a different space so they are just virtually running on the same block, also ive put the pmm and the new vmm in a new folder thats called memory just to make this more straightforward while developing
+
 Day 9 Video:
 So i had the idea of implementing a number on screen to show how much ram i have to be able to use it now as a POC and in the future for the accual CLI, but i remebred that i dont have number nor letter now i have to implement it myself and im going to build a simple basically hardcoded hexadecimal one for the POC and i also edited the types file so it can only be called once per file, and i also changed the ammounbt of memory i have so i can see at least 2GB i changed it in the build.sh file
 

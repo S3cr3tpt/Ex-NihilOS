@@ -1,49 +1,57 @@
 #include "idt.h"
 #include "../global/types.h"
 
-// The absolute memory array
+extern u32* global_framebuffer;
+extern void print_hex_64(int start_x, int start_y, u64 value, u32 color);
+
 struct idt_entry idt[256];
 struct idtr idtp;
 
-extern u32* global_framebuffer;
-
-// Function to calculate and inject the 64-bit memory address into the 16-byte gate
 void idt_set_gate(int n, uint64_t handler) {
     idt[n].isr_low = (uint16_t)handler;
-    idt[n].kernel_cs = 0x18; // Your 64-bit code segment from GDT
+    idt[n].kernel_cs = 0x18; 
     idt[n].ist = 0;
-    idt[n].attributes = 0x8E; // Present, Ring 0, 64-bit Interrupt Gate
+    idt[n].attributes = 0x8E; 
     idt[n].isr_mid = (uint16_t)(handler >> 16);
     idt[n].isr_high = (uint32_t)(handler >> 32);
     idt[n].reserved = 0;
 }
 
-// The Triage Function (Called by your AssemblyD `isr_common_stub`)
 void isr_handler(uint64_t* stack_frame) {
-    // stack_frame[0] is the error code (or our dummy 0)
-    // stack_frame[1] is the interrupt number pushed by the macro
-    int width = 1920; //screensize in a global file
+    int width = 1920; 
     int height = 1080;
-    int int_no = stack_frame[1];
-        switch (int_no) {
+    
+    int int_no = stack_frame[15]; 
+    
+    switch (int_no) {
         case 0:
-            u64 offset = width * (1080/2) + 1920/2; // Center of the screen
-            global_framebuffer[offset] = 0x0000FF00; 
+            global_framebuffer[(width * (1080/2)) + (1920/2)] = 0x0000FF00; 
             while(1) { __asm__("hlt");}
-
             break;
+            
+        case 14: { // INTERRUPT 14: PAGE FAULT
+            u64 faulting_address;
+            // CR2 holds the exact virtual address that caused the crash
+            __asm__ volatile("mov %%cr2, %0" : "=r" (faulting_address));
+            
+            // Print the malicious address in Red at coordinates X:100, Y:200
+            print_hex_64(100, 200, faulting_address, 0x00FF0000);
+            
+            while(1) { __asm__("hlt");}
+            break;
+        }
         
         default:
             for (int y=0; y < height; y++) {
                 for (int x=0; x < width; x++) {
-                    u64 offset = (y * width) + x;
-                    global_framebuffer[offset] = 0x00FF0000; 
+                    global_framebuffer[(y * width) + x] = 0x00FF0000; 
                 }
             }
             while(1) { __asm__("hlt");}
             break;
-        }
+    }
 }
+
 
 void idt_install() {
     idtp.limit = (sizeof(struct idt_entry) * 256) - 1;
