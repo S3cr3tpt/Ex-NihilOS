@@ -41,13 +41,36 @@ echo "[*] Linking Architecture..."
 ALL_OBJS=$(find $BUILD_DIR -name "*.o" ! -name "kernel_entry.o")
 
 # kernel_entry.o MUST remain first to guarantee it sits exactly at 0x1000
-ld -m elf_x86_64 -o $BUILD_DIR/kernel.bin -Ttext 0x1000 $BUILD_DIR/kernel_entry.o $ALL_OBJS --oformat binary
-
+# We removed -Ttext and --oformat binary, moving that logic safely into linker.ld
+ld -m elf_x86_64 -T src/linker.ld -o $BUILD_DIR/kernel.bin $BUILD_DIR/kernel_entry.o $ALL_OBJS
 # 6. Fuse and Pad
 cat $BUILD_DIR/boot.bin $BUILD_DIR/kernel.bin > $OS_IMAGE
 dd if=/dev/zero bs=1048576 count=1 >> $OS_IMAGE 2>/dev/null
 
-echo "[+] Built. Size: $(wc -c < $OS_IMAGE) bytes."
 
-# 7. Run
-qemu-system-x86_64 -drive format=raw,file=$OS_IMAGE -vga std -m 2G
+echo "[+] Built. Size: $(stat -c%s $OS_IMAGE) bytes.
+"
+
+# If the SSH_CLIENT variable is NOT empty, we are remote (Windows)
+
+if [ -n "$SSH_CLIENT" ]; then
+
+    echo "[*] Remote Terminal Detected (SSH/Windows)."
+
+    echo "[*] Booting Headless Mode. Broadcasting to VNC Port 5900..."
+
+    # Launch QEMU silently and stream the video to the network
+
+    qemu-system-x86_64 -drive format=raw,file=$OS_IMAGE -m 2G -vnc 0.0.0.0:0
+
+else
+
+    echo "[*] Local Hardware Detected."
+
+    echo "[*] Booting standard GTK Interface..."
+
+    # Launch QEMU normally on the physical laptop screen
+
+    qemu-system-x86_64 -drive format=raw,file=$OS_IMAGE -m 2G
+
+fi

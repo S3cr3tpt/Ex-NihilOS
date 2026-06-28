@@ -1,6 +1,7 @@
 #include "../cpu/idt.h"
 #include "../memory/pmm.h"
 #include "../memory/vmm.h"
+#include "../memory/heap.h"
 #include "../global/types.h"
 
 extern u64 total_memory_size;
@@ -36,7 +37,31 @@ void kernel_main(u32* framebuffer) {
 
     // Read the signature back from the virtual address and print it (Green)
     print_hex_64(100, 200, *v_ptr, 0x0000FF00);
+    // 1. Request a 4-byte slice from the Heap Allocator
+    u32* heap_test = (u32*)kmalloc(sizeof(u32));
 
+    // 2. Hardware Safety Check: Ensure the pointer is valid (not 0)
+    if (heap_test != 0) {
+        
+        // 3. Write a persistent hexadecimal signature to the allocated RAM
+        *heap_test = 0xDEADBEEF;
+
+        // 4. Read the signature back to verify the RAM retained the exact data
+        if (*heap_test == 0xDEADBEEF) {
+            
+            // 5. Visual Telemetry: Render a 50x50 Purple block (Hex: 0x800080)
+            // This manipulates the global_framebuffer array directly.
+            // Replace '1024' with your actual screen width if your VESA mode differs.
+            for (u32 y = 20; y < 70; y++) {
+                for (u32 x = 20; x < 70; x++) {
+                    global_framebuffer[y * 1024 + x] = 0x800080; 
+                }
+            }
+        }
+
+        // 6. Release the block back to the pool to prevent memory leaks
+        kfree(heap_test);
+    }
     // CPU execution idles here.
     while(1) { __asm__("hlt"); }
 }

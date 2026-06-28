@@ -9,7 +9,7 @@ mov sp, 0x7c00
 
 ; --- 2. LOAD KERNEL (THE PERMANENT FIX) ---
 mov ah, 0x02    ; Read Sectors
-mov al, 30      ; Read 30 Sectors (15KB)
+mov al, 50      ; Read 50 Sectors (25KB)
 mov ch, 0
 mov cl, 2       ; Start Sector 2
 mov dh, 0

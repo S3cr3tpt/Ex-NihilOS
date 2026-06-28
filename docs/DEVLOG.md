@@ -1,3 +1,18 @@
+Day 11 Erros before even applying the heap:
+so i got an error while booting it up but the strange thing is that i wanst even using it so i tought it was strange that i had an error there, so i took the files out to check that it was a problem with the heap files i added and yes it pinpointed that the error was with those files then i tought why whould it give me an error if im not even using it then i tought oh if im not using it its just wating memory and in the build i smash all of the files toguether so if its useless it might be creating problems and so i added a file names linker.ld so insted of the build.sh giving me a flat binary format that was messing with code that is not used yet it organzed the output and it just puts it toguether in a deterministic order, and it also adds sections for the unisitialized variables that are stored in .bss sections so if i just inicialize without any value it has a section and it dosnt give me erros, in conclusion the os booted and the cpu was running my kernel instructions and the it encountered the heap_head variable and it didnt know what it was looking for so it just says invalid opcode and it paniked and red screend with the linker i solved all of this problems and now i have a more eficient and less memory hungry OS
+
+Day 11 Implementation:
+To implement it i need to manage thousends of dynamic and random sized memory slices, and the OS must track which slices are actively processing the data and the ones that are empty, for this im going to use a hidden header so every time any memory is allocated the system puts "hidden" data in that chunk so i can track it, in that "hidden" part im we have the size of that chunk, if its free or occupied and the next memorry adress pointing to the next chink creating basically a linked list
+
+Day 11 Solution for it:
+The heap allocator helps by using the kmalloc that acts as a micrommanager so it pulls the 4KB from the PMM and slices them into the exact size needed for that specifc task 
+
+Day 11 Heap allocator:
+So from what i understood on this step i neeed this because when i do anything right now its as i only have 4096 bytes sections made by the pmm, everything that i will do like storing 32bit structures or a keystroke will always be using all of that space and after a while it will fill my ram because i never delete the data nor can i make it use less of it because its hardcoded to 4KB, and and with every variable in my os will need to have its size hardcoded i can not dynamically spawn any new user process, load a variable-sized file from the hard-drive or accept unpredictable network payloads
+
+Day 11 Im back:
+I just got home and im connecting my laptop to my dektop and i want to run my os on the desktop and edit the rest on the laptop so i can have more screens, so i will edit the build so it runs on windows and linux
+
 Day 10 ERROR:
 So i had an error while trigerring the interrupt 14, that is when a program "strikes" an unmaped sector it halts the execution loop and drops the address into CR2 register, because i was using the stackframe 1, that is the 2 64 bit frame of it, and when i changed to the 15 i acceded the exact 64bit block with the interrupt number pushed by the hardware, and as for the interrupt it halts the entire process so by using the asm voliatile command i hardcode a stop before the compiler delets it so i dont want it to optimise that part specifically
 
