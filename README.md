@@ -41,7 +41,7 @@ To compile the architecture and launch the QEMU emulator:
 - [X] VESA High-Definition Graphics (1920x1080)
 - [X] 64 bits IDT 
 - [X] Memory Management (Physical/Virtual Matrix)
-- [ ] Heap Allocator (Dynamic Memory Slicing)
+- [X] Heap Allocator (Dynamic Memory Slicing)
 - [ ] PIC Remapping & IRQ Unmasking
 - [ ] PS/2 Keyboard Driver 
 - [ ] ASCII Software Renderer (Text I/O)
