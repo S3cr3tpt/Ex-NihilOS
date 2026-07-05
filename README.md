@@ -42,7 +42,7 @@ To compile the architecture and launch the QEMU emulator:
 - [X] 64 bits IDT 
 - [X] Memory Management (Physical/Virtual Matrix)
 - [X] Heap Allocator (Dynamic Memory Slicing)
-- [ ] PIC Remapping & IRQ Unmasking
+- [X] PIC Remapping & IRQ Unmasking
 - [ ] PS/2 Keyboard Driver 
 - [ ] ASCII Software Renderer (Text I/O)
 - [ ] Tiling TUI / Shell

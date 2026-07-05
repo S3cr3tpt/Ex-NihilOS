@@ -1,25 +1,19 @@
 #!/bin/bash
 
-# --- CONFIGURATION ---
 SRC_BOOT="src/boot/boot.asm"
 SRC_KERNEL_ASM="src/kernel/kernel.asm"
-SRC_KERNEL_C="src/kernel/main.c"
 BUILD_DIR="build"
 OS_IMAGE="$BUILD_DIR/os-image.bin"
 
-# 1. Clean
 mkdir -p $BUILD_DIR
 rm -f $BUILD_DIR/*.bin $BUILD_DIR/*.o
 
-# 2. Assemble Bootloader
 echo "[*] Assembling Bootloader..."
 nasm -f bin $SRC_BOOT -o $BUILD_DIR/boot.bin
 
-# 3. Assemble Kernel Entry
 echo "[*] Assembling Kernel Entry..."
 nasm -f elf64 $SRC_KERNEL_ASM -o $BUILD_DIR/kernel_entry.o
 
-# 4. Dynamic Compilation (Sweep and Compile)
 echo "[*] Sweeping and Compiling C Matrix..."
 C_FILES=$(find src -name "*.c")
 for file in $C_FILES; do
@@ -27,7 +21,6 @@ for file in $C_FILES; do
     gcc -ffreestanding -mno-red-zone -m64 -mno-mmx -mno-sse -mno-sse2 -fno-pie -fno-pic -fno-asynchronous-unwind-tables -c $file -o $OBJ_FILE
 done
 
-# 4.5 Dynamic Assembly Compilation (For Ring 0 files like interrupts.asm)
 echo "[*] Sweeping and Compiling Ring 0 Assembly..."
 ASM_FILES=$(find src/cpu -name "*.asm")
 for file in $ASM_FILES; do
@@ -35,42 +28,23 @@ for file in $ASM_FILES; do
     nasm -f elf64 $file -o $OBJ_FILE
 done
 
-# 5. Dynamic Linker
 echo "[*] Linking Architecture..."
-# Collect all generated object files, excluding kernel_entry.o to prevent duplicate linking
 ALL_OBJS=$(find $BUILD_DIR -name "*.o" ! -name "kernel_entry.o")
 
-# kernel_entry.o MUST remain first to guarantee it sits exactly at 0x1000
-# We removed -Ttext and --oformat binary, moving that logic safely into linker.ld
-ld -m elf_x86_64 -T src/linker.ld -o $BUILD_DIR/kernel.bin $BUILD_DIR/kernel_entry.o $ALL_OBJS
-# 6. Fuse and Pad
+# Wired to linker.ld. Fused as pure binary.
+ld -m elf_x86_64 -T src/linker.ld --oformat binary -o $BUILD_DIR/kernel.bin $BUILD_DIR/kernel_entry.o $ALL_OBJS
+
+echo "[*] Fusing Payload..."
 cat $BUILD_DIR/boot.bin $BUILD_DIR/kernel.bin > $OS_IMAGE
 dd if=/dev/zero bs=1048576 count=1 >> $OS_IMAGE 2>/dev/null
 
-
-echo "[+] Built. Size: $(stat -c%s $OS_IMAGE) bytes.
-"
-
-# If the SSH_CLIENT variable is NOT empty, we are remote (Windows)
+echo "[+] Built. Size: $(stat -c%s $OS_IMAGE) bytes."
 
 if [ -n "$SSH_CLIENT" ]; then
-
     echo "[*] Remote Terminal Detected (SSH/Windows)."
-
     echo "[*] Booting Headless Mode. Broadcasting to VNC Port 5900..."
-
-    # Launch QEMU silently and stream the video to the network
-
     qemu-system-x86_64 -drive format=raw,file=$OS_IMAGE -m 2G -vnc 0.0.0.0:0
-
 else
-
     echo "[*] Local Hardware Detected."
-
-    echo "[*] Booting standard GTK Interface..."
-
-    # Launch QEMU normally on the physical laptop screen
-
     qemu-system-x86_64 -drive format=raw,file=$OS_IMAGE -m 2G
-
 fi
