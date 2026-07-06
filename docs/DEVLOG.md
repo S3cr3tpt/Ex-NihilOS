@@ -1,3 +1,18 @@
+Day 15 Some changes:
+Im just making some quality of life changes, i added the hability to delete characters in the terminal, before it also could delete them but it stayd in the graphics so it was confusing but i added the backspace to make it easier to use it, and i cleaned the interface and i put it like i wanted that you could see how i wanted in the DAY 0, finaly im proud of something i made, now i just have to add the accual setting because now its just static exept the terminal
+
+Day 14 Shell done:
+This was also pretty easy because its another translation layer with just 2 commands the ping to see if the cpu can execute any command and the help to see the commands i have, now the OS is a functioning one, with barely any commands but its an event driven one and i can accually run commands im happy with this but this is not the end i will only end when i think this os is military grade and even then i will keep updating it
+
+Day 14 Shell Finnaly:
+The shell form what i understood is basically another translation layer but this time insted of a direct like the keyboard with the keys, its more of a link with a string to a command that i say what the command is
+
+Day 13 No errors:
+Ok this part was just to hardcode the letters so its simple and gave me no erros the maijor thing that happen was that i forgot to put the uppercase letters thats it, now i need to build the shell and then i will have a simple, but functioning os
+
+Day 13 Keyboard Driver:
+This is exacly as it sounds its just a transatuin layer between the accual keyboard and the OS, i Will basically need to write my own ASCII table and link it to each SandCode given by the keyboard, and to implement this i will use an 1D Array of characters, so each SandCode Will be the exact spot in the array that has its exact character, but i have to be carefull while implementing this because the PS/2 hardware (the Keyboard mycrochip) is programed to play twice when its pressed and when its released, this is how in fps games when you press it it instantly does the act and in other slower paced or MMOs the thing only happens when you realease the button, this is because the chip send all of the keyboard information
+
 Day 12 Errorssss triple faults and even rebooting errors:
 So i created the files and before calling them in the main i just booted them up to see if there was any syntax error or something like that and there werent so i tried to implement them on the main and yes it had errors and a deep one because it made my cpu triplefault, the reason for that is because when i mapped the PIC, the keyboard was pointed to the vector 33, and dropped by the sti shild, and by default the motherboard PIT (programmable interval timer) fires continuously on IRQ0, but when i remaped it it shifted to the 32, and as the 32 was a null (unassigned) the CPU just jumped to an empty address trigering the chain that gave me the triple fault, so i put a hard-deafen command to the pic, that just masked all of the 16 irq lines silencing the bios timer allowing me to selectively unmask the only keyboard
 After that i was using the __attribute__((interrupt)) that is a handler, but as this handler is to big for the standart registers becuase they dont allow for the FPU registers durring a hardware interrupt to prevent memory corruption the gcc that creates basically the os from the files didnt allow that to happen so i needed to patch the interrupts.asm  to have the interrupts from 32 to 47, and with that i didnt need the atribute anymore

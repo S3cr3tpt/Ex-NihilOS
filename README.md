@@ -33,7 +33,7 @@ To compile the architecture and launch the QEMU emulator:
 - **Interrupts:** 256-gate IDT (ISR/IRQ Handling)
 - **Memory:** 4-level Paging (Identity Mapped)
 
-### Status
+### 0x06: Phase 1 Status (Foundation & REPL)
 - [X] Bootloader (Stage 1: Disk Read & Jump)
 - [X] Kernel Entry (Stage 2: 16-bit Setup -> 64-bit Long Mode)
 - [X] GDT / IDT Setup
@@ -43,8 +43,16 @@ To compile the architecture and launch the QEMU emulator:
 - [X] Memory Management (Physical/Virtual Matrix)
 - [X] Heap Allocator (Dynamic Memory Slicing)
 - [X] PIC Remapping & IRQ Unmasking
-- [ ] PS/2 Keyboard Driver 
-- [ ] ASCII Software Renderer (Text I/O)
-- [ ] Tiling TUI / Shell
+- [X] PS/2 Keyboard Driver 
+- [X] ASCII Software Renderer (Text I/O)
+- [X] Tiling TUI / Shell
+
+### 0x07: Phase 2 Trajectory (Military Grade & TUI)
+To elevate this architecture from a bare-metal execution loop to a resilient, military-grade system, the following vectors are designated for execution:
+[ ] Ring 3 User Space: Privilege segregation. The shell must operate in a restricted ring to prevent kinetic input from faulting the core kernel.
+[ ] Process Scheduler (Multitasking): CPU time-slicing via the PIT (Programmable Interval Timer) to run background system telemetry alongside the active shell.
+[ ] Persistent Storage (Filesystem): Building an ATA disk driver to read/write raw sectors, enabling the OS to save its own DevLog to the drive.
+[ ] Tiling Window Manager: Transitioning from the raw REPL to the partitioned graphical text interface (CPU/RAM telemetry panel, File context panel, Terminal panel).
+
 ---
 *Created by S3cr3tpt. Started Feb 2026.*
