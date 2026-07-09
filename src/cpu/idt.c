@@ -7,15 +7,8 @@
 extern u32* global_framebuffer;
 extern void print_hex_64(int start_x, int start_y, u64 value, u32 color);
 
-// Exposed from renderer.c
-extern void draw_char(int x, int y, char c, u32 color);
-
 struct idt_entry idt[256];
 struct idtr idtp;
-
-// Persistent hardware cursor tracking
-static int terminal_cursor_x = 50;
-static int terminal_cursor_y = 300; // Place input logic below the telemetry blocks
 
 void idt_set_gate(int n, uint64_t handler) {
     idt[n].isr_low = (uint16_t)handler;
@@ -30,22 +23,24 @@ void idt_set_gate(int n, uint64_t handler) {
 void isr_handler(uint64_t* stack_frame) {
     int width = 1920; 
     int height = 1080;
-    
     int int_no = stack_frame[15]; 
 
     // HARDWARE INTERRUPT SECTOR
     if (int_no >= 32 && int_no <= 47) {
-        
         // IRQ 1: KEYBOARD
         if (int_no == 33) {
             u8 scancode = inb(0x60); 
-            char ascii_char = keyboard_process_scancode(scancode);
+            
+            // Pipe raw state to the Virtual Keyboard UI
+            shell_update_keystate(scancode);
 
+            // Pipe translated logic to the Filesystem Shell
+            char ascii_char = keyboard_process_scancode(scancode);
             if (ascii_char != 0) {
-                // Pipe the hardware output directly to the Software Shell
                 shell_process_char(ascii_char);
             }
         }
+
         if (int_no >= 40) outb(0xA0, 0x20); 
         outb(0x20, 0x20);     
         return; 
@@ -79,7 +74,6 @@ void idt_install() {
     idtp.limit = (sizeof(struct idt_entry) * 256) - 1;
     idtp.base = (uint64_t)&idt;
 
-    // Zero out the entire table to prevent undefined jumps
     uint8_t *idt_ptr = (uint8_t *)&idt;
     for (int i = 0; i < sizeof(struct idt_entry) * 256; i++) {
         idt_ptr[i] = 0;
@@ -120,6 +114,5 @@ void idt_install() {
     idt_set_gate(46, (uint64_t)isr46);
     idt_set_gate(47, (uint64_t)isr47);
 
-    // Lock the matrix into the CPU
     __asm__ volatile ("lidt %0" : : "m" (idtp));
 }

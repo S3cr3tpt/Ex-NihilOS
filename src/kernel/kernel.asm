@@ -9,10 +9,16 @@ extern kernel_main
 section .text
 _start:
     [bits 16]
+    ; Zero out data segments to ensure clean physical addressing
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+
     ; DEBUG: Print 'A' (Alive)
     mov ah, 0x0E
     mov al, 'A'
     int 0x10
+    
 ; --- 1. GET MEMORY MAP (E820) ---
     mov di, 0x5004      
     xor ebx, ebx        
@@ -32,15 +38,14 @@ _start:
     je .e820_done
     jmp .e820_loop
 .e820_done:
-    ; (VESA code continues here...)
-    ; 1. GET VESA INFO (Targeting 0x8000)
+    
+    ; 1. GET VESA INFO 
     mov ax, 0x4F00
-    mov di, VBE_INFO_ADDR   ; FORCE DI TO 0x8000
+    mov di, VBE_INFO_ADDR
     int 0x10
     cmp ax, 0x004F
     jne vbe_fail
 
-    ; Get list pointer from the buffer we just filled
     mov si, [VBE_INFO_ADDR + 14]
     mov ax, [VBE_INFO_ADDR + 16]
     mov fs, ax
@@ -51,29 +56,30 @@ _start:
     cmp cx, 0xFFFF
     je vbe_fail
 
-    ; 2. GET MODE INFO (Targeting 0x9000)
+    ; 2. GET MODE INFO
     mov ax, 0x4F01
-    mov di, MODE_INFO_ADDR  ; FORCE DI TO 0x9000
+    mov di, MODE_INFO_ADDR 
     int 0x10
     cmp ax, 0x004F
     jne .find_mode
 
     ; 3. CHECK FOR 1920x1080
     mov ax, [MODE_INFO_ADDR + 0x12]
-    cmp ax, 1920        ; Width
+    cmp ax, 1920        
     jne .find_mode
     
     mov ax, [MODE_INFO_ADDR + 0x14]
-    cmp ax, 1080        ; Height
+    cmp ax, 1080        
     jne .find_mode
     
     mov al, [MODE_INFO_ADDR + 0x19]
-    cmp al, 32          ; Color Depth
+    cmp al, 32          
     jne .find_mode
 
     ; --- FOUND IT ---
     mov eax, [MODE_INFO_ADDR + 0x28]
-    mov [framebuffer_addr], eax
+    ; [PATCH]: Force 32-bit displacement for new high memory address
+    mov [dword framebuffer_addr], eax
 
     ; SET MODE
     or cx, 0x4000
@@ -83,11 +89,12 @@ _start:
 
     ; --- ENTER PROTECTED MODE ---
     cli
-    lgdt [gdt_descriptor]
+    ; [PATCH]: Force 32-bit displacement to reach the new 0x10000 offset
+    lgdt [dword gdt_descriptor]  
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-    jmp 0x08:init_32bit
+    jmp dword 0x08:init_32bit
 
 vbe_fail:
     mov ah, 0x0E
@@ -108,19 +115,19 @@ init_32bit:
     mov gs, ax
     mov esp, 0x90000
 
-    ; PAGING (Map 4GB)
-    mov edi, 0x10000
+    ; PAGING [PATCH: Evacuated to 0x70000 to make room for Kernel]
+    mov edi, 0x70000
     xor eax, eax
     mov ecx, 6144
     rep stosd
 
-    mov dword [0x10000], 0x11003 
-    mov dword [0x11000], 0x12003
-    mov dword [0x11008], 0x13003
-    mov dword [0x11010], 0x14003
-    mov dword [0x11018], 0x15003
+    mov dword [0x70000], 0x71003 
+    mov dword [0x71000], 0x72003
+    mov dword [0x71008], 0x73003
+    mov dword [0x71010], 0x74003
+    mov dword [0x71018], 0x75003
 
-    mov edi, 0x12000
+    mov edi, 0x72000
     mov eax, 0x83
     mov ecx, 2048
 .huge_loop:
@@ -130,7 +137,7 @@ init_32bit:
     loop .huge_loop
 
     ; LONG MODE
-    mov eax, 0x10000
+    mov eax, 0x70000    ; Route CR3 to new Page Tables
     mov cr3, eax
     mov eax, cr4
     or eax, 1 << 5
@@ -158,8 +165,6 @@ init_64bit:
 ; --- DATA ---
 section .data
 framebuffer_addr: dd 0
-; NOTE: Removed vbe_info_block and mode_info_block from here.
-; We use the raw memory addresses 0x8000 and 0x9000 instead.
 
 align 8
 gdt_start:
@@ -171,4 +176,4 @@ gdt_end:
 
 gdt_descriptor:
     dw gdt_end - gdt_start - 1
-    dd gdt_start
+    dd gdt_start   

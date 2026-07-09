@@ -31,7 +31,8 @@ To compile the architecture and launch the QEMU emulator:
 - **Mode:** 64-bit Long Mode (DPL 0)
 - **Video:** VESA VBE 1920x1080x32bpp
 - **Interrupts:** 256-gate IDT (ISR/IRQ Handling)
-- **Memory:** 4-level Paging (Identity Mapped)
+- **Memory:** 4-level Paging (Identity Mapped at 0x70000)
+- **Storage:** ATA PIO Mode (2MB Raw Platter)
 
 ### 0x06: Phase 1 Status (Foundation & REPL)
 - [X] Bootloader (Stage 1: Disk Read & Jump)
@@ -47,12 +48,16 @@ To compile the architecture and launch the QEMU emulator:
 - [X] ASCII Software Renderer (Text I/O)
 - [X] Tiling TUI / Shell
 
-### 0x07: Phase 2 Trajectory (Military Grade & TUI)
-To elevate this architecture from a bare-metal execution loop to a resilient, military-grade system, the following vectors are designated for execution:
- - [ ] Ring 3 User Space: Privilege segregation. The shell must operate in a restricted ring to prevent kinetic input from faulting the core kernel.
- - [ ] Process Scheduler (Multitasking): CPU time-slicing via the PIT (Programmable Interval Timer) to run background system telemetry alongside the active shell.
- - [ ] Persistent Storage (Filesystem): Building an ATA disk driver to read/write raw sectors, enabling the OS to save its own DevLog to the drive.
- - [ ] Tiling Window Manager: Transitioning from the raw REPL to the partitioned graphical text interface (CPU/RAM telemetry panel, File context panel, Terminal panel).
+### 0x07: Phase 2 Trajectory (Persistent Data & Kinetics)
+To elevate this architecture from a bare-metal execution loop to a resilient system, the following vectors map the current operational trajectory.
 
+ - [x] Single Address Space (Ring 0): Bypassed Ring 3 privilege segregation. The architecture operates entirely in Ring 0 for zero-latency, absolute-authority execution.
+ - [x] Storage Hardware Bridge: Engineered an ATA PIO disk driver capable of raw 512-byte magnetic sector reads/writes.
+ - [x] Filesystem Foundation: Deployed a UNIX-style routing table (FileNodes) mapping directory logic to Logical Block Addresses (LBAs). Includes autonomous zero-state formatting and directory traversal (ls, cd).
+ - [x] Kinetic TUI Matrix: Partitioned graphical text interface with real-time UI tracking (Virtual Keyboard matrix, Filesystem telemetry panel).
+ - [ ] Data Payload Operations: Expand the filesystem architecture to support dynamic file creation (touch, mkdir) and raw data extraction (cat).
+ - [ ] Native Buffer Editor: Engineer a bare-metal text editor allowing the system to natively write and save the DEVLOG.md directly to the SSD from within the active OS.
+ - [ ] Hardware Interrupt Timers (PIT): Wire the Programmable Interval Timer (PIT) to execute asynchronous background hardware interrupts, driving autonomous telemetry updates (uptime, memory load) without blocking the REPL shell.
+ - [ ] Binary Execution Pipeline: Construct an ELF dynamic loader to pull compiled binaries from the SSD into RAM and hand off the instruction pointer, allowing the OS to execute external files.
 ---
 *Created by S3cr3tpt. Started Feb 2026.*

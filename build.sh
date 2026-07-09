@@ -18,7 +18,7 @@ echo "[*] Sweeping and Compiling C Matrix..."
 C_FILES=$(find src -name "*.c")
 for file in $C_FILES; do
     OBJ_FILE="$BUILD_DIR/$(basename $file .c).o"
-    gcc -ffreestanding -mno-red-zone -m64 -mno-mmx -mno-sse -mno-sse2 -fno-pie -fno-pic -fno-asynchronous-unwind-tables -c $file -o $OBJ_FILE
+    gcc -Os -ffreestanding -mno-red-zone -m64 -mno-mmx -mno-sse -mno-sse2 -fno-pie -fno-pic -fno-asynchronous-unwind-tables -c $file -o $OBJ_FILE
 done
 
 echo "[*] Sweeping and Compiling Ring 0 Assembly..."
@@ -30,21 +30,20 @@ done
 
 echo "[*] Linking Architecture..."
 ALL_OBJS=$(find $BUILD_DIR -name "*.o" ! -name "kernel_entry.o")
-
-# Wired to linker.ld. Fused as pure binary.
 ld -m elf_x86_64 -T src/linker.ld --oformat binary -o $BUILD_DIR/kernel.bin $BUILD_DIR/kernel_entry.o $ALL_OBJS
 
 echo "[*] Fusing Payload..."
-cat $BUILD_DIR/boot.bin $BUILD_DIR/kernel.bin > $OS_IMAGE
-dd if=/dev/zero bs=1048576 count=1 >> $OS_IMAGE 2>/dev/null
+# 1. Forge a mathematically perfect 2MB magnetic platter (4096 sectors)
+dd if=/dev/zero of=$OS_IMAGE bs=512 count=4096 2>/dev/null
+# 2. Inject Bootloader at Sector 0
+dd if=$BUILD_DIR/boot.bin of=$OS_IMAGE bs=512 seek=0 conv=notrunc 2>/dev/null
+# 3. Inject Kernel Matrix at Sector 1
+dd if=$BUILD_DIR/kernel.bin of=$OS_IMAGE bs=512 seek=1 conv=notrunc 2>/dev/null
 
 echo "[+] Built. Size: $(stat -c%s $OS_IMAGE) bytes."
 
 if [ -n "$SSH_CLIENT" ]; then
-    echo "[*] Remote Terminal Detected (SSH/Windows)."
-    echo "[*] Booting Headless Mode. Broadcasting to VNC Port 5900..."
     qemu-system-x86_64 -drive format=raw,file=$OS_IMAGE -m 2G -vnc 0.0.0.0:0
 else
-    echo "[*] Local Hardware Detected."
     qemu-system-x86_64 -drive format=raw,file=$OS_IMAGE -m 2G
 fi
