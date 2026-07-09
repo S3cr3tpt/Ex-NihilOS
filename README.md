@@ -1,5 +1,5 @@
 # Ex-NihilOS
-> *Ad Astra Per Aspera* (To the stars through difficulties)
+> *Ad Astra Per Aspera*
 
 ### 0x00: The Origin
 **Ex-NihilOS** is a 64-bit Operating System kernel built from absolute zero. 
