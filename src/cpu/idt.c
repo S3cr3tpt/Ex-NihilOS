@@ -3,6 +3,7 @@
 #include "../global/types.h"
 #include "../drivers/keyboard.h"
 #include "../kernel/shell.h"
+#include "../video/tui.h"
 
 extern u32* global_framebuffer;
 extern void print_hex_64(int start_x, int start_y, u64 value, u32 color);
@@ -32,7 +33,7 @@ void isr_handler(uint64_t* stack_frame) {
             u8 scancode = inb(0x60); 
             
             // Pipe raw state to the Virtual Keyboard UI
-            shell_update_keystate(scancode);
+            tui_update_keystate(scancode);
 
             // Pipe translated logic to the Filesystem Shell
             char ascii_char = keyboard_process_scancode(scancode);

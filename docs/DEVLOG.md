@@ -1,3 +1,10 @@
+Day 17 Changing some code arround:
+i changed most of the visual input to another file because putting the immage setting in the shell is a bit wierd, so i changed it and made it in the new file called TUI (terminal User Interface) so its more organized
+
+Day 17 Making my OS more effitient:
+I was thinking and I realised that my if/else tree to check for the commands is highly inefitient because as i get more commands as it has  O(N) complexity its not that good so i tought what if i creat an array with the words and in them each has a pointer to what it does, and im going to try to implement something like that because i want this to be effitient even if its harder to do
+So i searched and for fewer than 100 commands it dosnt make sense to do that because a hash table will just add bloat to the system right know, if i just add an array like my first tought then it will be better, because tecnically it will still be an O(N) complexity but as its stored in L1 cache it will be faster
+
 Day 16 Finnally finishing the accual file system with precistance:
 So i already had a command to test the ls and cd, that just created the devlog and, a directory with the kernel.bin in it, so i just needed to make something similar that if the files aready exist then it dosnt write them if they dont it writes the file system 
 

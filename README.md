@@ -22,7 +22,7 @@ This OS is my sanctuary. It is built on the belief that if you control the memor
 This OS carries its own history.
 The development process—the struggles, the triple faults, and the logic—is documented in the [DEVLOG.md](./DEVLOG.md).
 *(Note: The DevLog is eventually embedded into the OS filesystem itself).*
-
+1
 ### 0x04: Deployment
 To compile the architecture and launch the QEMU emulator:
 `chmod +x build.sh && ./build.sh`
