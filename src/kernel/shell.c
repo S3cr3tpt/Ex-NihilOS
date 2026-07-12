@@ -37,7 +37,7 @@ static void cmd_ping(const char* args) {
 }
 
 static void cmd_help(const char* args) {
-    print_string(cursor_x, cursor_y, "CORE: ping, disk, ls, cd, clear", 0x0000FFFF); 
+    print_string(cursor_x, cursor_y, "CORE: ping, disk, ls, cd, touch, mkdir, cat, clear", 0x0000FFFF);
     cursor_y += 16;
 }
 
@@ -75,6 +75,36 @@ static void cmd_cd(const char* args) {
     }
 }
 
+
+static void cmd_touch(const char* args) {
+    if (args && *args) {
+        fs_touch(args, cursor_x, &cursor_y);
+        tui_update_fs_panel(); // Kinetic UI refresh
+    } else {
+        print_string(cursor_x, cursor_y, "ERROR: Filename required.", 0x00FF0000);
+        cursor_y += 16;
+    }
+}
+
+static void cmd_mkdir(const char* args) {
+    if (args && *args) {
+        fs_mkdir(args, cursor_x, &cursor_y);
+        tui_update_fs_panel(); // Kinetic UI refresh
+    } else {
+        print_string(cursor_x, cursor_y, "ERROR: Directory name required.", 0x00FF0000);
+        cursor_y += 16;
+    }
+}
+
+static void cmd_cat(const char* args) {
+    if (args && *args) {
+        fs_cat(args, cursor_x, &cursor_y);
+    } else {
+        print_string(cursor_x, cursor_y, "ERROR: Filename required.", 0x00FF0000);
+        cursor_y += 16;
+    }
+}
+
 static Command command_table[] = {
     {"ping", cmd_ping},
     {"help", cmd_help},
@@ -82,9 +112,11 @@ static Command command_table[] = {
     {"disk", cmd_disk},
     {"ls", cmd_ls},
     {"cd", cmd_cd},
+    {"touch", cmd_touch}, 
+    {"mkdir", cmd_mkdir}, 
+    {"cat", cmd_cat},     
     {0, 0}
 };
-
 // --- REPL EXECUTION LOGIC ---
 void shell_init() {
     tui_init(); // Boot graphical interface

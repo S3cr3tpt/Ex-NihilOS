@@ -1,3 +1,10 @@
+Day 18 Optimising a bit more:
+Im getting to a part that i can optimize things so i wanted to make the directorys appear always on top in my interface but the thing is i didnt have a sorting algorithm and i was sujested bublesort because when its less than 16 files/folders is basically instant but i know its not effitient so i implemented cocktail sort its still not perfect but i like it
+Also i changed the TUI in the memory part, so i can see the accual ram usage the available and the total  
+
+Day 18 Making the user be able to create files/directorys, and read the files (cat,touch,mkdir):
+So to add it is easier than i tought, i guess because im comparring making "simple" commands to building the assembly code, but for this we just need to know how the storage is working, so it has sections where it stores the actual data, and we just after pulling the data to the ram and we say what to add or read from the ssd, we just blast it into the next available slot that we built before
+
 Day 17 Changing some code arround:
 i changed most of the visual input to another file because putting the immage setting in the shell is a bit wierd, so i changed it and made it in the new file called TUI (terminal User Interface) so its more organized
 

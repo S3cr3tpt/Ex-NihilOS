@@ -16,4 +16,7 @@ void fs_cd(const char* target, int term_x, int* term_y);
 void fs_render_panel(int start_x, int start_y);
 void fs_init();
 
+void fs_touch(const char* filename, int term_x, int* term_y);
+void fs_mkdir(const char* dirname, int term_x, int* term_y);
+void fs_cat(const char* filename, int term_x, int* term_y);
 #endif

@@ -7,6 +7,7 @@ extern void print_string(int x, int y, const char* str, u32 color);
 extern void draw_rect(int start_x, int start_y, int width, int height, u32 color);
 extern void print_memory_string(int start_x, int start_y, u64 total_bytes, u32 color);
 extern u64 total_memory_size;
+extern u64 used_blocks;
 
 // --- KINETIC KEYBOARD MATRIX ---
 static int kb_x[128] = {0};
@@ -42,18 +43,115 @@ static void map_key(u8 sc, int x, int y, int w, const char* label) {
 
 static void init_keyboard_map() {
     print_string(430, 770, "[ VIRTUAL SENSOR MAP ]", 0x0000FFFF);
-    int basex = 430, std_w = 85, step = std_w + 10;    
-    int sx = basex, sy = 790;
-    
-    // Paste exact map_key calls from old shell.c here...
-}
+
+    int basex = 430;
+    int std_w = 85;           
+    int step = std_w + 10;    
+
+    // Row 1 (Numbers)
+    int sx = basex; int sy = 790;
+    map_key(0x29, sx, sy, std_w, "`"); sx += step;
+    map_key(0x02, sx, sy, std_w, "1"); sx += step;
+    map_key(0x03, sx, sy, std_w, "2"); sx += step;
+    map_key(0x04, sx, sy, std_w, "3"); sx += step;
+    map_key(0x05, sx, sy, std_w, "4"); sx += step;
+    map_key(0x06, sx, sy, std_w, "5"); sx += step;
+    map_key(0x07, sx, sy, std_w, "6"); sx += step;
+    map_key(0x08, sx, sy, std_w, "7"); sx += step;
+    map_key(0x09, sx, sy, std_w, "8"); sx += step;
+    map_key(0x0A, sx, sy, std_w, "9"); sx += step;
+    map_key(0x0B, sx, sy, std_w, "0"); sx += step;
+    map_key(0x0C, sx, sy, std_w, "-"); sx += step;
+    map_key(0x0D, sx, sy, std_w, "="); sx += step;
+    map_key(0x0E, sx, sy, 215, "BACKSPACE"); 
+
+    // Row 2 (QWERTY)
+    sx = basex; sy += 60;
+    map_key(0x0F, sx, sy, 135, "TAB"); sx += 145;
+    map_key(0x10, sx, sy, std_w, "Q"); sx += step;
+    map_key(0x11, sx, sy, std_w, "W"); sx += step;
+    map_key(0x12, sx, sy, std_w, "E"); sx += step;
+    map_key(0x13, sx, sy, std_w, "R"); sx += step;
+    map_key(0x14, sx, sy, std_w, "T"); sx += step;
+    map_key(0x15, sx, sy, std_w, "Y"); sx += step;
+    map_key(0x16, sx, sy, std_w, "U"); sx += step;
+    map_key(0x17, sx, sy, std_w, "I"); sx += step;
+    map_key(0x18, sx, sy, std_w, "O"); sx += step;
+    map_key(0x19, sx, sy, std_w, "P"); sx += step;
+    map_key(0x1A, sx, sy, std_w, "["); sx += step;
+    map_key(0x1B, sx, sy, std_w, "]"); sx += step;
+    map_key(0x2B, sx, sy, 165, "\\");
+
+    // Row 3 (ASDF)
+    sx = basex; sy += 60;
+    map_key(0x3A, sx, sy, 175, "CAPS"); sx += 185;
+    map_key(0x1E, sx, sy, std_w, "A"); sx += step;
+    map_key(0x1F, sx, sy, std_w, "S"); sx += step;
+    map_key(0x20, sx, sy, std_w, "D"); sx += step;
+    map_key(0x21, sx, sy, std_w, "F"); sx += step;
+    map_key(0x22, sx, sy, std_w, "G"); sx += step;
+    map_key(0x23, sx, sy, std_w, "H"); sx += step;
+    map_key(0x24, sx, sy, std_w, "J"); sx += step;
+    map_key(0x25, sx, sy, std_w, "K"); sx += step;
+    map_key(0x26, sx, sy, std_w, "L"); sx += step;
+    map_key(0x27, sx, sy, std_w, ";"); sx += step;
+    map_key(0x28, sx, sy, std_w, "'"); sx += step;
+    map_key(0x1C, sx, sy, 220, "ENTER");
+
+    // Row 4 (ZXCV)
+    sx = basex; sy += 60;
+    map_key(0x2A, sx, sy, 225, "SHIFT"); sx += 235;
+    map_key(0x2C, sx, sy, std_w, "Z"); sx += step;
+    map_key(0x2D, sx, sy, std_w, "X"); sx += step;
+    map_key(0x2E, sx, sy, std_w, "C"); sx += step;
+    map_key(0x2F, sx, sy, std_w, "V"); sx += step;
+    map_key(0x30, sx, sy, std_w, "B"); sx += step;
+    map_key(0x31, sx, sy, std_w, "N"); sx += step;
+    map_key(0x32, sx, sy, std_w, "M"); sx += step;
+    map_key(0x33, sx, sy, std_w, ","); sx += step;
+    map_key(0x34, sx, sy, std_w, "."); sx += step;
+    map_key(0x35, sx, sy, std_w, "/"); sx += step;
+    map_key(0x36, sx, sy, 265, "SHIFT");
+
+    // Row 5 (Space)
+    sx = basex; sy += 60;
+    map_key(0x1D, sx, sy, 250, "CTRL"); sx += 260;
+    map_key(0x38, sx, sy, 250, "ALT"); sx += 260;
+    map_key(0x39, sx, sy, 930, "SPACE");}
 
 static void draw_telemetry() {
-    u32 cyan = 0x0000FFFF, white = 0x00FFFFFF, grey = 0x00555555;
+    u32 cyan  = 0x0000FFFF;
+    u32 white = 0x00FFFFFF;
+    u32 grey  = 0x00555555;
+    u32 green = 0x0000FF00;
+    
     print_string(20, 20, "[ SYSTEM STATE ]", cyan);
-    print_string(20, 80, "CPU: x86_64 Core", white);
-    print_string(20, 260, "RAM:", white);
-    print_memory_string(60, 260, total_memory_size, white);
+    print_string(20, 60, "CPU: x86_64 Core", white);
+    print_string(20, 80, "MODE: Long Mode (Ring 0)", grey);
+    print_string(20, 100, "ARCH: Ex-NihilOS Bare Metal", grey);
+
+    // --- MEMORY MATRIX ---
+    print_string(20, 160, "[ MEMORY MATRIX ]", cyan);
+    
+    // 1. Total Installed RAM (Calculated via E820 BIOS Map)
+    print_string(20, 200, "TOTAL:", white);
+    print_memory_string(80, 200, total_memory_size, white);
+    
+    // 2. Dynamic Used RAM (Physical Frames * 4096 Bytes)
+    u64 used_memory_bytes = used_blocks * 4096;
+    print_string(20, 220, "USED :", grey);
+    print_memory_string(80, 220, used_memory_bytes, green);
+
+    // 3. Dynamic Available RAM (Total - Used)
+    u64 avail_bytes = (total_memory_size > used_memory_bytes) ? (total_memory_size - used_memory_bytes) : 0;
+    print_string(20, 240, "AVAIL:", white);
+    print_memory_string(80, 240, avail_bytes, cyan);
+
+    // --- STORAGE MATRIX ---
+    print_string(20, 300, "[ STORAGE BUS ]", cyan);
+    print_string(20, 340, "DRIVE: ATA PIO Mode", white);
+    print_string(20, 360, "SIZE : 2048 KB Platter", grey);
+    print_string(20, 380, "SECT : LBA 0 -> LBA 4096", grey);
 }
 
 static void draw_network() {
